@@ -169,6 +169,10 @@ namespace Fooyin::MDX {
     {
         if (!m_isOpen || bytes == 0) return {};
 
+        if (m_totalFrames > 0 && m_currentFrame >= m_totalFrames) {
+            return {};
+        }
+
         int bytesPerFrame = m_format.channelCount() * sizeof(int16_t);
         int totalFramesRequested = static_cast<int>(bytes / bytesPerFrame);
 
@@ -181,7 +185,13 @@ namespace Fooyin::MDX {
         constexpr int maxChunkFrames = 512;
 
         while (framesReadTotal < totalFramesRequested) {
-            int chunkSize = std::min(totalFramesRequested - framesReadTotal, maxChunkFrames);
+            int framesRemaining = (m_totalFrames > 0 && m_totalFrames > m_currentFrame)
+                                ? static_cast<int>(m_totalFrames - m_currentFrame)
+                                : totalFramesRequested - framesReadTotal;
+
+            if (framesRemaining <= 0) break;
+
+            int chunkSize = std::min({totalFramesRequested - framesReadTotal, maxChunkFrames, framesRemaining});
             int16_t* chunkDst = dst + (framesReadTotal * m_format.channelCount());
 
             int res = mdx_calc_sample(&m_mdx, chunkDst, chunkSize);
@@ -193,6 +203,10 @@ namespace Fooyin::MDX {
 
         if (framesReadTotal == 0) {
             return {};
+        }
+
+        if (framesReadTotal < totalFramesRequested) {
+            buffer.resize(static_cast<size_t>(framesReadTotal) * bytesPerFrame);
         }
 
         // Apply gain scaling.
