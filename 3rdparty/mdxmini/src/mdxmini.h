@@ -109,6 +109,14 @@ void  mdx_get_title(t_mdxmini *data, char *title);
  */
 int   mdx_get_length(t_mdxmini *data);
 /**
+ * \brief Returns the length to the song, in milliseconds.
+ *        This is based on the currently defined number of loops to play, so this value can change.
+ *
+ * \param data a t_mdxmini struct representing an open song.
+ * \return the length to the song, in milliseconds.
+ */
+int   mdx_get_length_ms(t_mdxmini *data);
+/**
  * \brief Sets the number of loops to play when rendering this song; this is used when calculating duration.
  *
  * \param data a t_mdxmini struct representing an open song.

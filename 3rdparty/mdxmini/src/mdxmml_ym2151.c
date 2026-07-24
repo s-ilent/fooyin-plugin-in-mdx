@@ -375,6 +375,43 @@ int mdx_parse_mml_ym2151_async_get_length(songdata *data)
   return sec;
 }
 
+int mdx_parse_mml_ym2151_async_get_length_ms(songdata *data)
+{
+  int next;
+  double elapsed_us;
+  
+  __GETSELF(data);
+  
+  next = 1;
+  self->mdx->elapsed_time = 0;
+  while(next && self->mdx->elapsed_time < (1200 * 1000000))
+  {
+    next = mdx_parse_mml_ym2151_async(data);
+  }
+
+  /* store ms */
+  elapsed_us = (double)self->mdx->elapsed_time;
+
+  /* stop */
+  ym2151_all_note_off(data);
+
+  /* reinitialize */ 
+  mdx_init_track_work_area_ym2151(data);
+  pcm8_init(data);
+  
+  if (!ym2151_reg_init( self->mdx, data )) {
+    return 0;
+  }
+  
+  /* start parsing */
+  self->all_track_finished=FLAG_FALSE;
+  self->fade_out_wait=0;
+  self->master_volume=127;
+  
+  /* Return length in milliseconds */
+  return (int)((elapsed_us + 500.0) / 1000.0);
+}
+
 int
 mdx_parse_mml_ym2151_make_samples(short *buffer,int buffer_size, songdata *data)
 {

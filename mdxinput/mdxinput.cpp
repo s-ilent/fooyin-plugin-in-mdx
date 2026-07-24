@@ -99,8 +99,8 @@ namespace Fooyin::MDX {
         mdx_set_max_loop(&m_mdx, m_loopCount);
         m_isOpen = true;
 
-        int durationSec = mdx_get_length(&m_mdx);
-        m_totalFrames = static_cast<uint64_t>(durationSec) * m_sampleRate;
+        int durationMs = mdx_get_length_ms(&m_mdx);
+        m_totalFrames = (static_cast<uint64_t>(durationMs) * m_sampleRate) / 1000;
 
         // Reset sample frame state after length simulation
         m_mdx.samples = 0;
@@ -243,10 +243,10 @@ namespace Fooyin::MDX {
         mdx_get_title(&mdx, titleBuf);
         QString title = decodeShiftJIS(titleBuf);
 
-        int durationSec = mdx_get_length(&mdx);
+        int durationMs = mdx_get_length_ms(&mdx);
 
         track.setTitle(title.isEmpty() ? fileInfo.completeBaseName() : title);
-        track.setDuration(static_cast<int64_t>(durationSec) * 1000);
+        track.setDuration(durationMs);
         track.setSampleRate(44100);
         track.setChannels(2);
         track.setBitDepth(16);

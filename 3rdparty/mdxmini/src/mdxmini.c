@@ -358,6 +358,15 @@ int  mdx_get_length( t_mdxmini *data )
     return len;
 }
 
+int mdx_get_length_ms( t_mdxmini *data )
+{
+    ym2151_set_logging(0, data->songdata);
+    int ms = mdx_parse_mml_ym2151_async_get_length_ms(data->songdata);
+    ym2151_set_logging(0, data->songdata);
+
+    return (ms > 0) ? ms : 100;
+}
+
 int  mdx_get_tracks ( t_mdxmini *data )
 {
 	return data->mdx->tracks;

@@ -221,7 +221,7 @@ extern int mdx_parse_mml_ym2151_make_samples(short *buffer,int buffer_size, song
 extern int mdx_parse_mml_get_tempo(void* in_self);
 
 extern int mdx_parse_mml_ym2151_async_get_length(songdata *data);
-
+extern int mdx_parse_mml_ym2151_async_get_length_ms(songdata *data);
 
 extern void mdx_parse_mml_ym2151_async_finalize(songdata *);
 
