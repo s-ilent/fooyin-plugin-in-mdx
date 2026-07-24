@@ -31,7 +31,7 @@ namespace Fooyin::MDX {
         connect(resetButton, &QPushButton::clicked, this, [this]() {
             m_gain->setValue(0.0);
             m_loopCount->setValue(3);
-            m_sampleRate->setCurrentText(u"44100 Hz"_s);
+            m_sampleRate->setCurrentText(u"62500 Hz"_s);
             m_pdxDir->clear();
         });
 
@@ -46,7 +46,7 @@ namespace Fooyin::MDX {
         m_loopCount->setRange(1, 10);
         m_loopCount->setSuffix(u" "_s + tr("loops"));
 
-        m_sampleRate->addItems({u"22050 Hz"_s, u"44100 Hz"_s, u"48000 Hz"_s, u"96000 Hz"_s});
+        m_sampleRate->addItems({u"22050 Hz"_s, u"44100 Hz"_s, u"48000 Hz"_s, u"62500 Hz"_s, u"96000 Hz"_s});
 
         auto* pdxRow = new QHBoxLayout();
         pdxRow->addWidget(m_pdxDir);
