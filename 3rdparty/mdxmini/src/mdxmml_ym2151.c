@@ -219,7 +219,7 @@ mdx_parse_mml_ym2151( MDX_DATA *orig_mdx, PDX_DATA *orig_pdx, songdata *data )
     /* timer count */
 
     self->mdx->total_count++;
-    self->mdx->elapsed_time += 1000*1024*(256 - self->mdx->tempo)/4000;
+    self->mdx->elapsed_time += (1000.0 * 1024.0 * (256.0 - self->mdx->tempo)) / 4000.0;
 
 	do_pcm8(NULL,-1, data);
     
@@ -334,7 +334,7 @@ mdx_parse_mml_ym2151_async(songdata *data)
   /* timer count */
 
   self->mdx->total_count++;
-  self->mdx->elapsed_time += 1000*1024*(256 - self->mdx->tempo)/4000;
+  self->mdx->elapsed_time += (1000.0 * 1024.0 * (256.0 - self->mdx->tempo)) / 4000.0;
 
   return FLAG_TRUE;
 }

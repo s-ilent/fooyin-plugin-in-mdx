@@ -274,7 +274,9 @@ int mdx_calc_sample(t_mdxmini *data, short *buf, int buffer_size)
 #endif
 			next = mdx_next_frame(data);
 			frame = mdx_frame_length(data);
-			data->samples = (data->mdx->dsp_speed * frame)/1000000;
+			long long speed_times_frame = (long long)data->mdx->dsp_speed * (long long)frame;
+			speed_times_frame /= 1000000LL;
+			data->samples = (int)speed_times_frame;
 		}
         
         int calc_len = data->samples;
@@ -321,7 +323,9 @@ int mdx_calc_log(t_mdxmini *data, short *buf, int buffer_size)
 #endif
 			next = mdx_next_frame(data);
 			frame = mdx_frame_length(data);
-			data->samples = (data->mdx->dsp_speed * frame)/1000000;
+			long long speed_times_frame = (long long)data->mdx->dsp_speed * (long long)frame;
+			speed_times_frame /= 1000000LL;
+			data->samples = (int)speed_times_frame;
 		}
         
         int calc_len = data->samples;

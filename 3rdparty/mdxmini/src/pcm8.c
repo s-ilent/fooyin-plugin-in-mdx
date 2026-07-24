@@ -60,7 +60,7 @@ struct _pcm8_instances {
 #define PCM8_MAX_FREQ 5
 
 static const int adpcm_freq_list[] = {
-  3900, 5200, 7800, 10400, 15600
+  3906, 5208, 7812, 10416, 15625
 };
 
 /* ------------------------------------------------------------------ */
@@ -179,7 +179,7 @@ int pcm8_set_pcm_freq( int ch, int hz, songdata *data ) {
   if ( hz < 0 ) return 1;
   if ( hz >= PCM8_MAX_FREQ ) {
     self->work[ch].adpcm = FLAG_FALSE;
-    self->work[ch].freq = 15600;
+    self->work[ch].freq = 15625;
   } else {
     self->work[ch].freq = adpcm_freq_list[hz];
     self->work[ch].adpcm = FLAG_TRUE;
