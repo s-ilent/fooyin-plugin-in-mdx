@@ -1,12 +1,12 @@
 {
     "Name" : "MDX / Sharp X68000 Decoder",
     "Version" : "0.1.0",
-    "Author" : "Fooyin Contributor",
+    "Author" : "Silent",
     "Copyright" : "Copyright © 2026",
     "License" : [
         "GNU General Public License v2.0 or later"
     ],
     "Category" : "Audio.Input",
     "Description" : "Decodes Sharp X68000 MDX music files using mdxmini",
-    "Url" : "https://github.com/fooyin/fooyin"
+    "Url" : "https://github.com/s-ilent/fooyin-plugin-in-mdx"
 }
