@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QStringDecoder>
 #include <cmath>
+#include <algorithm>
 
 Q_LOGGING_CATEGORY(MDX_LOG, "fy.mdx")
 
@@ -100,6 +101,10 @@ namespace Fooyin::MDX {
 
         int durationSec = mdx_get_length(&m_mdx);
         m_totalFrames = static_cast<uint64_t>(durationSec) * m_sampleRate;
+
+        // Reset sample frame state after length simulation
+        m_mdx.samples = 0;
+
         return true;
     }
 
@@ -148,7 +153,7 @@ namespace Fooyin::MDX {
         }
 
         uint64_t framesToSkip = targetFrame - m_currentFrame;
-        constexpr int chunkSize = 2048;
+        constexpr int chunkSize = 512;
 
         while (framesToSkip > 0 && m_isOpen) {
             int toRead = static_cast<int>(std::min<uint64_t>(framesToSkip, chunkSize));
@@ -165,24 +170,35 @@ namespace Fooyin::MDX {
         if (!m_isOpen || bytes == 0) return {};
 
         int bytesPerFrame = m_format.channelCount() * sizeof(int16_t);
-        int framesRequested = static_cast<int>(bytes / bytesPerFrame);
+        int totalFramesRequested = static_cast<int>(bytes / bytesPerFrame);
 
         AudioBuffer buffer{m_format, m_format.durationForFrames(static_cast<int>(m_currentFrame))};
         buffer.resize(bytes);
 
         int16_t* dst = reinterpret_cast<int16_t*>(buffer.data());
 
-        int res = mdx_calc_sample(&m_mdx, dst, framesRequested);
-        m_currentFrame += framesRequested;
+        int framesReadTotal = 0;
+        constexpr int maxChunkFrames = 512;
 
-        if (res == 0 && framesRequested == 0) {
+        while (framesReadTotal < totalFramesRequested) {
+            int chunkSize = std::min(totalFramesRequested - framesReadTotal, maxChunkFrames);
+            int16_t* chunkDst = dst + (framesReadTotal * m_format.channelCount());
+
+            int res = mdx_calc_sample(&m_mdx, chunkDst, chunkSize);
+            framesReadTotal += chunkSize;
+            m_currentFrame += chunkSize;
+
+            if (res == 0) break;
+        }
+
+        if (framesReadTotal == 0) {
             return {};
         }
 
         // Apply gain scaling.
         if (m_gainDb != 0.0) {
             const float gainFactor = std::pow(10.0f, static_cast<float>(m_gainDb) / 20.0f);
-            size_t sampleCount = bytes / sizeof(int16_t);
+            size_t sampleCount = static_cast<size_t>(framesReadTotal * m_format.channelCount());
 
             for (size_t i = 0; i < sampleCount; ++i) {
                 int val = static_cast<int>(dst[i] * gainFactor);
