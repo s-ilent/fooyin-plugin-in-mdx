@@ -34,6 +34,7 @@ namespace Fooyin::MDX {
             decoder->setGain(settings.value("MDX/Gain", 0.0).toDouble());
             decoder->setLoopCount(settings.value("MDX/LoopCount", 3).toInt());
             decoder->setSampleRate(settings.value("MDX/SampleRate", 44100).toInt());
+            decoder->setPdxDir(settings.value("MDX/PdxDir", QString()).toString());
 
             return decoder;
         };

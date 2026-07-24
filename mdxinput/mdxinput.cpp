@@ -1,6 +1,8 @@
 #include "mdxinput.h"
 #include <QFileInfo>
 #include <QLoggingCategory>
+#include <QRegularExpression>
+#include <QSettings>
 #include <QStringDecoder>
 #include <cmath>
 
@@ -16,14 +18,20 @@ namespace {
         return extensions;
     }
 
+    QString cleanMdxTitle(QString title)
+    {
+        // Strip non-printable ASCII/C0 control characters and ANSI escape sequences
+        static const QRegularExpression ctrlSeq(u"\x1B\\[[0-9;]*[a-zA-Z]|[\x00-\x1F\x7F]"_s);
+        return title.remove(ctrlSeq).trimmed();
+    }
+
     QString decodeShiftJIS(const char* data)
     {
         if (!data || *data == '\0') return {};
         // Qt 6 has no ShiftJIS enum; construct by name.
         auto decoder = QStringDecoder("Shift-JIS");
-        if (!decoder.isValid())
-            return QString::fromLatin1(data); // fallback when ICU is absent
-        return decoder(data);
+        QString str = decoder.isValid() ? decoder(data) : QString::fromLatin1(data);
+        return cleanMdxTitle(str);
     }
 
     QString extractLocalFilePath(const AudioSource& source, std::unique_ptr<QTemporaryFile>& tempFile)
@@ -80,6 +88,11 @@ namespace Fooyin::MDX {
         if (res < 0) {
             qCWarning(MDX_LOG) << "Failed to open MDX file:" << filePath;
             return false;
+        }
+
+        if (!m_pdxDir.isEmpty()) {
+            QByteArray fallbackPdxDir = m_pdxDir.toUtf8();
+            mdx_set_dir(&m_mdx, fallbackPdxDir.data());
         }
 
         mdx_set_max_loop(&m_mdx, m_loopCount);
@@ -203,6 +216,13 @@ namespace Fooyin::MDX {
             return false;
         }
 
+        QSettings settings;
+        QString fallbackPdx = settings.value(u"MDX/PdxDir"_s).toString();
+        if (!fallbackPdx.isEmpty()) {
+            QByteArray fallbackBytes = fallbackPdx.toUtf8();
+            mdx_set_dir(&mdx, fallbackBytes.data());
+        }
+
         char titleBuf[MDX_MAX_TITLE_LENGTH] = {0};
         mdx_get_title(&mdx, titleBuf);
         QString title = decodeShiftJIS(titleBuf);
@@ -221,6 +241,10 @@ namespace Fooyin::MDX {
         track.setExtraProperty(u"FM Channels"_s, QString::number(std::min(trackCount, 8)));
         if (trackCount > 8) {
             track.setExtraProperty(u"PCM Channels"_s, QString::number(trackCount - 8));
+        }
+
+        if (mdx.mdx && mdx.mdx->haspdx && mdx.mdx->pdx_name[0] != '\0') {
+            track.setExtraProperty(u"PDX File"_s, QString::fromLatin1(mdx.mdx->pdx_name));
         }
 
         mdx_close(&mdx);

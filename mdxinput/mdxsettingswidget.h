@@ -6,6 +6,7 @@
 
 class QSpinBox;
 class QComboBox;
+class QLineEdit;
 
 namespace Fooyin::MDX {
 
@@ -19,6 +20,7 @@ namespace Fooyin::MDX {
     private:
         QSpinBox* m_loopCount{nullptr};
         QComboBox* m_sampleRate{nullptr};
+        QLineEdit* m_pdxDir{nullptr};
         DoubleSliderEditor* m_gain{nullptr};
 
         QSettings m_settings;

@@ -16,6 +16,7 @@ namespace Fooyin::MDX {
         void setGain(double db) { m_gainDb = db; }
         void setLoopCount(int count) { m_loopCount = count; }
         void setSampleRate(int rate) { m_sampleRate = rate; }
+        void setPdxDir(const QString& dir) { m_pdxDir = dir; }
 
         [[nodiscard]] QStringList extensions() const override;
         [[nodiscard]] bool isSeekable() const override;
@@ -31,6 +32,7 @@ namespace Fooyin::MDX {
         double m_gainDb{0.0};
         int m_loopCount{3};
         int m_sampleRate{44100};
+        QString m_pdxDir;
 
         AudioFormat m_format;
         t_mdxmini m_mdx;

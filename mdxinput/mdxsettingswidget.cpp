@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QSpinBox>
 #include <QComboBox>
+#include <QFileDialog>
+#include <QLineEdit>
 
 using namespace Qt::StringLiterals;
 
@@ -15,6 +17,7 @@ namespace Fooyin::MDX {
         : QDialog(parent)
         , m_loopCount(new QSpinBox(this))
         , m_sampleRate(new QComboBox(this))
+        , m_pdxDir(new QLineEdit(this))
         , m_gain(new DoubleSliderEditor(tr("Gain"), this))
     {
         setWindowTitle(tr("MDX Plugin Settings"));
@@ -29,6 +32,7 @@ namespace Fooyin::MDX {
             m_gain->setValue(0.0);
             m_loopCount->setValue(3);
             m_sampleRate->setCurrentText(u"44100 Hz"_s);
+            m_pdxDir->clear();
         });
 
         auto* bottomRow = new QHBoxLayout();
@@ -44,12 +48,24 @@ namespace Fooyin::MDX {
 
         m_sampleRate->addItems({u"22050 Hz"_s, u"44100 Hz"_s, u"48000 Hz"_s, u"96000 Hz"_s});
 
+        auto* pdxRow = new QHBoxLayout();
+        pdxRow->addWidget(m_pdxDir);
+        auto* browseBtn = new QPushButton(tr("Browse..."), this);
+        connect(browseBtn, &QPushButton::clicked, this, [this]() {
+            QString dir = QFileDialog::getExistingDirectory(this, tr("Select PDX Directory"), m_pdxDir->text());
+            if (!dir.isEmpty()) {
+                m_pdxDir->setText(dir);
+            }
+        });
+        pdxRow->addWidget(browseBtn);
+
         auto* layout = new QFormLayout(this);
         layout->setSizeConstraint(QLayout::SetFixedSize);
 
         layout->addRow(m_gain);
         layout->addRow(tr("Max loops"), m_loopCount);
         layout->addRow(tr("Sample rate"), m_sampleRate);
+        layout->addRow(tr("Fallback PDX directory"), pdxRow);
         layout->addRow(bottomRow);
 
         loadSettings();
@@ -60,6 +76,7 @@ namespace Fooyin::MDX {
         m_settings.setValue("MDX/Gain", m_gain->value());
         m_settings.setValue("MDX/LoopCount", m_loopCount->value());
         m_settings.setValue("MDX/SampleRate", m_sampleRate->currentText().split(u' ')[0].toInt());
+        m_settings.setValue("MDX/PdxDir", m_pdxDir->text().trimmed());
         done(Accepted);
     }
 
@@ -70,6 +87,7 @@ namespace Fooyin::MDX {
 
         int rate = m_settings.value("MDX/SampleRate", 44100).toInt();
         m_sampleRate->setCurrentText(QString::number(rate) + u" Hz"_s);
+        m_pdxDir->setText(m_settings.value("MDX/PdxDir", QString()).toString());
     }
 
 } // namespace Fooyin::MDX
