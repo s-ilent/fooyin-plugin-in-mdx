@@ -1071,6 +1071,7 @@ set_plfo( int track, int v1, int v2, int v3, int v4, int v5, songdata *data )
   __GETMDX(data);
 
   t = v2*256+v3;
+  if (t < 2) t = 2;   /* MXDRV LFO clock must be >=2; smaller values are unrepresentable and were crashing the engine */
   d = v4*256+v5;
   if ( d>=0x8000 ) {
     d = d-0x10000;
