@@ -1620,7 +1620,7 @@ INLINE signed int op_calc(YM2151Operator * OP, unsigned int env, signed int pm)
 	UINT32 p;
 
 
-	p = (env<<3) + sin_tab[ ( ((signed int)((OP->phase & ~FREQ_MASK) + (pm<<15))) >> FREQ_SH ) & SIN_MASK ];
+	p = (env<<3) + sin_tab[ ( ((signed int)((OP->phase & ~FREQ_MASK) + (pm * 32768))) >> FREQ_SH ) & SIN_MASK ];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -1682,7 +1682,7 @@ INLINE void chan_calc(unsigned int chan)
 		{
 			if (!op->fb_shift)
 				out=0;
-			op->fb_out_curr = op_calc1(op, env, (out<<op->fb_shift) );
+			op->fb_out_curr = op_calc1(op, env, (out * (1 << op->fb_shift)) );
 		}
 	}
 
@@ -1731,7 +1731,7 @@ INLINE void chan7_calc(void)
 		{
 			if (!op->fb_shift)
 				out=0;
-			op->fb_out_curr = op_calc1(op, env, (out<<op->fb_shift) );
+			op->fb_out_curr = op_calc1(op, env, (out * (1 << op->fb_shift)) );
 		}
 	}
 
@@ -2162,11 +2162,11 @@ INLINE void advance(void)
 	{
 		if (op->pms)	/* only when phase modulation from LFO is enabled for this channel */
 		{
-			INT32 mod_ind = PSG->lfp;		/* -128..+127 (8bits signed) */
-			if (op->pms < 6)
-				mod_ind >>= (6 - op->pms);
-			else
-				mod_ind <<= (op->pms - 5);
+		    INT32 mod_ind = PSG->lfp;       /* -128..+127 (8bits signed) */
+            if (op->pms < 6)
+                mod_ind >>= (6 - op->pms);
+            else
+                mod_ind *= (1 << (op->pms - 5));
 
 			if (mod_ind)
 			{

@@ -586,23 +586,27 @@ set_new_event( int t, songdata *songdata )
       follower = 2;
       break;
 
-    case MDX_REPEAT_END:
-      if (--mdx->track[t].loop_counter[mdx->track[t].loop_depth-1] == 0 ) {
-	if ( --mdx->track[t].loop_depth < 0 ) mdx->track[t].loop_depth=0;
-      } else {
-	if ( data[ptr+1] >= 0x80 ) {
-	  ptr = ptr+2 - (0x10000-(data[ptr+1]*256 + data[ptr+2])) - 2;
-	} else {
-	  ptr = ptr+2 + data[ptr+1]*256 + data[ptr+2] - 2;
-	}
-      }
-      follower = 2;
-      break;
-
+      case MDX_REPEAT_END:
+            if (mdx->track[t].loop_depth > 0) {
+              if (--mdx->track[t].loop_counter[mdx->track[t].loop_depth-1] == 0 ) {
+                if ( --mdx->track[t].loop_depth < 0 ) mdx->track[t].loop_depth=0;
+              } else {
+                if ( data[ptr+1] >= 0x80 ) {
+                  ptr = ptr+2 - (0x10000-(data[ptr+1]*256 + data[ptr+2])) - 2;
+                } else {
+                  ptr = ptr+2 + data[ptr+1]*256 + data[ptr+2] - 2;
+                }
+              }
+            }
+            follower = 2;
+            break;
+      
     case MDX_REPEAT_BREAK:
-      if ( mdx->track[t].loop_counter[mdx->track[t].loop_depth-1] == 1 ) {
-	if ( --mdx->track[t].loop_depth < 0 ) mdx->track[t].loop_depth=0;
-	ptr = ptr+2 + data[ptr+1]*256 + data[ptr+2] -2 +2;
+      if (mdx->track[t].loop_depth > 0) {
+        if ( mdx->track[t].loop_counter[mdx->track[t].loop_depth-1] == 1 ) {
+          if ( --mdx->track[t].loop_depth < 0 ) mdx->track[t].loop_depth=0;
+          ptr = ptr+2 + data[ptr+1]*256 + data[ptr+2] -2 +2;
+        }
       }
       follower = 2;
       break;
