@@ -17,6 +17,7 @@ namespace Fooyin::MDX {
         : QDialog(parent)
         , m_loopCount(new QSpinBox(this))
         , m_sampleRate(new QComboBox(this))
+        , m_fmCore(new QComboBox(this))
         , m_pdxDir(new QLineEdit(this))
         , m_gain(new DoubleSliderEditor(tr("Gain"), this))
     {
@@ -32,6 +33,7 @@ namespace Fooyin::MDX {
             m_gain->setValue(0.0);
             m_loopCount->setValue(3);
             m_sampleRate->setCurrentText(u"62500 Hz"_s);
+            m_fmCore->setCurrentIndex(0);
             m_pdxDir->clear();
         });
 
@@ -47,6 +49,9 @@ namespace Fooyin::MDX {
         m_loopCount->setSuffix(u" "_s + tr("loops"));
 
         m_sampleRate->addItems({u"22050 Hz"_s, u"44100 Hz"_s, u"48000 Hz"_s, u"62500 Hz"_s, u"96000 Hz"_s});
+        
+        m_fmCore->addItem(tr("MAME YM2151 (Fast)"), 0);
+        m_fmCore->addItem(tr("Nuked OPM (Experimental)"), 1);
 
         auto* pdxRow = new QHBoxLayout();
         pdxRow->addWidget(m_pdxDir);
@@ -63,6 +68,7 @@ namespace Fooyin::MDX {
         layout->setSizeConstraint(QLayout::SetFixedSize);
 
         layout->addRow(m_gain);
+        layout->addRow(tr("FM Synth Core"), m_fmCore);
         layout->addRow(tr("Max loops"), m_loopCount);
         layout->addRow(tr("Sample rate"), m_sampleRate);
         layout->addRow(tr("Fallback PDX directory"), pdxRow);
@@ -74,6 +80,7 @@ namespace Fooyin::MDX {
     void MDXSettingsWidget::accept()
     {
         m_settings.setValue("MDX/Gain", m_gain->value());
+        m_settings.setValue("MDX/FmCore", m_fmCore->currentData().toInt());
         m_settings.setValue("MDX/LoopCount", m_loopCount->value());
         m_settings.setValue("MDX/SampleRate", m_sampleRate->currentText().split(u' ')[0].toInt());
         m_settings.setValue("MDX/PdxDir", m_pdxDir->text().trimmed());
@@ -83,6 +90,11 @@ namespace Fooyin::MDX {
     void MDXSettingsWidget::loadSettings()
     {
         m_gain->setValue(m_settings.value("MDX/Gain", 0.0).toDouble());
+        
+        int core = m_settings.value("MDX/FmCore", 1).toInt();
+        int idx = m_fmCore->findData(core);
+        m_fmCore->setCurrentIndex(idx >= 0 ? idx : 1);
+                
         m_loopCount->setValue(m_settings.value("MDX/LoopCount", 3).toInt());
 
         int rate = m_settings.value("MDX/SampleRate", 44100).toInt();

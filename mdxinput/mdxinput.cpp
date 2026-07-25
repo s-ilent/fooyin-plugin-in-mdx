@@ -75,6 +75,10 @@ namespace Fooyin::MDX {
             mdx_close(&m_mdx);
             m_isOpen = false;
         }
+        
+        QSettings settings;
+        int fmCore = settings.value("MDX/FmCore", 1).toInt();
+        mdx_set_fm_core(fmCore); // Apply selected FM core (0 = MAME, 1 = Nuked OPM)
 
         m_currentFilePath = filePath;
         QFileInfo fileInfo(filePath);

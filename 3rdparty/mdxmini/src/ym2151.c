@@ -4,6 +4,12 @@
 *
 ******************************************************************************/
 
+#define YM2151Init       MAME_YM2151Init
+#define YM2151Shutdown   MAME_YM2151Shutdown
+#define YM2151ResetChip  MAME_YM2151ResetChip
+#define YM2151WriteReg   MAME_YM2151WriteReg
+#define YM2151UpdateOne  MAME_YM2151UpdateOne
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1013,7 +1019,7 @@ INLINE void refresh_EG(YM2151Operator * op)
 
 
 /* write a register on YM2151 chip number 'n' */
-void YM2151WriteReg(void *_chip, int r, int v)
+void MAME_YM2151WriteReg(void *_chip, int r, int v)
 {
 	YM2151 *chip = _chip;
 	YM2151Operator *op = &chip->oper[ (r&0x07)*4+((r&0x18)>>3) ];
@@ -1471,7 +1477,7 @@ static void ym2151_state_save_register( YM2151 *chip, int sndindex )
 *   'clock' is the chip clock in Hz
 *   'rate' is sampling rate
 */
-void * YM2151Init(int index, int clock, int rate)
+void * MAME_YM2151Init(int index, int clock, int rate)
 {
 	YM2151 *PSG;
 
@@ -1499,14 +1505,14 @@ void * YM2151Init(int index, int clock, int rate)
 	/*logerror("YM2151[init] eg_timer_add=%8x eg_timer_overflow=%8x\n", PSG->eg_timer_add, PSG->eg_timer_overflow);*/
 
 #ifdef USE_MAME_TIMERS
-/* this must be done _before_ a call to YM2151ResetChip() */
+/* this must be done _before_ a call to MAME_YM2151ResetChip() */
 	PSG->timer_A = timer_alloc_ptr(timer_callback_a);
 	PSG->timer_B = timer_alloc_ptr(timer_callback_b);
 #else
 	PSG->tim_A      = 0;
 	PSG->tim_B      = 0;
 #endif
-	YM2151ResetChip(PSG);
+	MAME_YM2151ResetChip(PSG);
 	/*logerror("YM2151[init] clock=%i sampfreq=%i\n", PSG->clock, PSG->sampfreq);*/
 
 #ifdef LOG_CYM_FILE
@@ -1522,7 +1528,7 @@ void * YM2151Init(int index, int clock, int rate)
 
 
 
-void YM2151Shutdown(void *_chip)
+void MAME_YM2151Shutdown(void *_chip)
 {
 	YM2151 *chip = _chip;
 
@@ -1553,7 +1559,7 @@ void YM2151Shutdown(void *_chip)
 /*
 *   Reset chip number 'n'.
 */
-void YM2151ResetChip(void *_chip)
+void MAME_YM2151ResetChip(void *_chip)
 {
 	int i;
 	YM2151 *chip = _chip;
@@ -1605,11 +1611,11 @@ void YM2151ResetChip(void *_chip)
 	chip->csm_req	= 0;
 	chip->status    = 0;
 
-	YM2151WriteReg(chip, 0x1b, 0);	/* only because of CT1, CT2 output pins */
-	YM2151WriteReg(chip, 0x18, 0);	/* set LFO frequency */
+	MAME_YM2151WriteReg(chip, 0x1b, 0);	/* only because of CT1, CT2 output pins */
+	MAME_YM2151WriteReg(chip, 0x18, 0);	/* set LFO frequency */
 	for (i=0x20; i<0x100; i++)		/* set the operators */
 	{
-		YM2151WriteReg(chip, i, 0);
+		MAME_YM2151WriteReg(chip, i, 0);
 	}
 }
 
@@ -2336,7 +2342,7 @@ INLINE signed int acc_calc(signed int value)
 *   '**buffers' is table of pointers to the buffers: left and right
 *   'length' is the number of samples that should be generated
 */
-void YM2151UpdateOne(void *chip, SAMP **buffers, int length)
+void MAME_YM2151UpdateOne(void *chip, SAMP **buffers, int length)
 {
 	int i;
 	signed int outl,outr;

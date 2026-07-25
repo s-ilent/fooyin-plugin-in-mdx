@@ -43,6 +43,13 @@ typedef struct
  */
 void mdx_set_rate(int freq);
 /**
+ * \brief Sets the YM2151 emulator used to generate the PCM data.
+ *        This is global and affects every song.
+ *
+ * \param core 0 for the original MAME, 1 for the more accurate Nuked-OPM. 
+ */
+void mdx_set_fm_core(int core);
+/**
  * \brief Changes the directory in which the provided t_mdxmini context should look for PDX samples.
  *
  * \param data a t_mdxmini struct.
@@ -147,5 +154,10 @@ int  mdx_get_tracks(t_mdxmini *data);
  * \param len the number of tracks' worth of notes to read; usually the output of mdx_get_tracks().
  */
 void mdx_get_current_notes(t_mdxmini *data, int *notes, int len);
+
+/**
+ * \brief Returns the current FM core being used. 
+ */
+int  mdx_get_fm_core(void);
 
 #endif

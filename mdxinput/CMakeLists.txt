@@ -17,7 +17,10 @@ add_library(mdxmini_static STATIC
     ${MDXMINI_DIR}/src/pdxfile.c
     ${MDXMINI_DIR}/src/mdxfile.c
     ${MDXMINI_DIR}/src/pcm8.c
-    ${MDXMINI_DIR}/src/ym2151.c
+    ${MDXMINI_DIR}/src/ym2151.c # MAME
+    ${MDXMINI_DIR}/src/opm.c # Nuked
+    ${MDXMINI_DIR}/src/ym2151_nuked.c
+    ${MDXMINI_DIR}/src/ym2151_dispatch.c
     ${MDXMINI_DIR}/src/nlg.c
 )
 

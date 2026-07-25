@@ -20,6 +20,7 @@ namespace Fooyin::MDX {
     private:
         QSpinBox* m_loopCount{nullptr};
         QComboBox* m_sampleRate{nullptr};
+        QComboBox* m_fmCore{nullptr};
         QLineEdit* m_pdxDir{nullptr};
         DoubleSliderEditor* m_gain{nullptr};
 
