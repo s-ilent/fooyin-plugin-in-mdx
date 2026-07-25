@@ -91,7 +91,7 @@ static void store_pdx_data( PDX_DATA *pdx, unsigned char *buf, int buflen ) {
       if ( address!=0 && address<=ptr+768 ) iscontinue=FLAG_FALSE;
       if ( address>0 && address < data_top ) data_top = address;
 
-      if ( size<=0 || address<0) {
+      if ( size<=0 || address<0 || address + size > buflen) {
 	pdx->tone[num].data = NULL;
 	pdx->tone[num].size=0;
 	continue;

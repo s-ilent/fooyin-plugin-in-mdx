@@ -509,9 +509,21 @@ set_new_event( int t, songdata *songdata )
   int count;
   int follower;
   __GETMDX(songdata);
+  
+  if (!mdx || !mdx->data || mdx->length <= 0) {
+    mdx->track[t].counter = -1;
+    return -1;
+  }
 
   data = mdx->data;
   ptr = mdx->track[t].current_mml_ptr;
+  
+  if (ptr < 0 || ptr >= mdx->length) {
+    note_off(t, songdata);
+    mdx->track[t].counter = -1;
+    return -1;
+  }
+  
   count = 0;
   follower = 0;
 
@@ -528,6 +540,7 @@ set_new_event( int t, songdata *songdata )
     follower=0;
 
   } else if ( data[ptr] <= MDX_MAX_NOTE ) { /* note */
+    if (ptr + 1 >= mdx->length) goto out_of_bounds;
     note_on( t, data[ptr], songdata);
     count = data[ptr+1]+1;
     do_quantize( t, count, songdata );
@@ -537,26 +550,31 @@ set_new_event( int t, songdata *songdata )
     switch ( data[ptr] ) {
 
     case MDX_SET_TEMPO:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       set_tempo( data[ptr+1], songdata );
       follower = 1;
       break;
 
     case MDX_SET_OPM_REG:
+      if (ptr + 2 >= mdx->length) goto out_of_bounds;
       set_opm_reg( t, data[ptr+1], data[ptr+2], songdata );
       follower = 2;
       break;
 
     case MDX_SET_VOICE:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       set_voice( t, data[ptr+1], songdata );
       follower = 1;
       break;
 
     case MDX_SET_PHASE:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       set_phase( t, data[ptr+1], songdata );
       follower = 1;
       break;
 
     case MDX_SET_VOLUME:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       set_volume( t, data[ptr+1], songdata );
       follower = 1;
       break;
@@ -572,6 +590,7 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_SET_QUANTIZE:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       set_quantize( t, data[ptr+1], songdata );
       follower = 1;
       break;
@@ -582,28 +601,33 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_REPEAT_START:
-      mdx->track[t].loop_counter[mdx->track[t].loop_depth] = data[ptr+1];
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
+      if ( mdx->track[t].loop_depth < MDX_MAX_LOOP_DEPTH ) {
+        mdx->track[t].loop_counter[mdx->track[t].loop_depth] = data[ptr+1];
       if ( mdx->track[t].loop_depth < MDX_MAX_LOOP_DEPTH )
 	mdx->track[t].loop_depth++;
+      }
       follower = 2;
       break;
 
-      case MDX_REPEAT_END:
-            if (mdx->track[t].loop_depth > 0) {
-              if (--mdx->track[t].loop_counter[mdx->track[t].loop_depth-1] == 0 ) {
-                if ( --mdx->track[t].loop_depth < 0 ) mdx->track[t].loop_depth=0;
-              } else {
-                if ( data[ptr+1] >= 0x80 ) {
-                  ptr = ptr+2 - (0x10000-(data[ptr+1]*256 + data[ptr+2])) - 2;
-                } else {
-                  ptr = ptr+2 + data[ptr+1]*256 + data[ptr+2] - 2;
-                }
-              }
-            }
-            follower = 2;
-            break;
-      
+    case MDX_REPEAT_END:
+      if (ptr + 2 >= mdx->length) goto out_of_bounds;
+      if (mdx->track[t].loop_depth > 0) {
+        if (--mdx->track[t].loop_counter[mdx->track[t].loop_depth-1] == 0 ) {
+          if ( --mdx->track[t].loop_depth < 0 ) mdx->track[t].loop_depth=0;
+        } else {
+          if ( data[ptr+1] >= 0x80 ) {
+            ptr = ptr+2 - (0x10000-(data[ptr+1]*256 + data[ptr+2])) - 2;
+          } else {
+            ptr = ptr+2 + data[ptr+1]*256 + data[ptr+2] - 2;
+          }
+        }
+      }
+      follower = 2;
+      break;
+
     case MDX_REPEAT_BREAK:
+      if (ptr + 2 >= mdx->length) goto out_of_bounds;
       if (mdx->track[t].loop_depth > 0) {
         if ( mdx->track[t].loop_counter[mdx->track[t].loop_depth-1] == 1 ) {
           if ( --mdx->track[t].loop_depth < 0 ) mdx->track[t].loop_depth=0;
@@ -614,32 +638,38 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_SET_DETUNE:
+      if (ptr + 2 >= mdx->length) goto out_of_bounds;
       set_detune( t, data[ptr+1], data[ptr+2], songdata );
       follower = 2;
       break;
 
     case MDX_SET_PORTAMENT:
+      if (ptr + 2 >= mdx->length) goto out_of_bounds;
       set_portament( t, data[ptr+1], data[ptr+2], songdata );
       follower = 2;
       break;
 
     case MDX_DATA_END:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       if ( data[ptr+1] == 0x00 ) {
 	count = -1;
 	note_off(t, songdata);
 	follower = 1;
       } else {
+	if (ptr + 2 >= mdx->length) goto out_of_bounds;
 	ptr = ptr+2 - (0x10000-(data[ptr+1]*256 + data[ptr+2])) - 2;
 	mdx->track[t].infinite_loop_times++;
 	follower = 2;
       }
       break;
- 
+
     case MDX_KEY_ON_DELAY:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       follower = 1;
       break;
 
     case MDX_SEND_SYNC:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       send_sync( data[ptr+1], songdata );
       follower = 1;
       break;
@@ -651,15 +681,18 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_SET_FREQ:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       set_freq( t, data[ptr+1], songdata );
       follower = 1;
       break;
 
     case MDX_SET_PLFO:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       if ( data[ptr+1] == 0x80 || data[ptr+1] == 0x81 ) {
 	set_plfo_onoff( t, data[ptr+1]-0x80, songdata );
 	follower = 1;
       } else {
+	if (ptr + 5 >= mdx->length) goto out_of_bounds;
 	set_plfo( t,
 		  data[ptr+1], data[ptr+2], data[ptr+3],
 		  data[ptr+4], data[ptr+5], songdata );
@@ -668,10 +701,12 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_SET_ALFO:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       if ( data[ptr+1] == 0x80 || data[ptr+1] == 0x81 ) {
 	set_alfo_onoff( t, data[ptr+1]-0x80, songdata );
 	follower = 1;
       } else {
+	if (ptr + 5 >= mdx->length) goto out_of_bounds;
 	set_alfo( t,
 		  data[ptr+1], data[ptr+2], data[ptr+3],
 		  data[ptr+4], data[ptr+5], songdata );
@@ -680,10 +715,12 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_SET_OPMLFO:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       if ( data[ptr+1] == 0x80 || data[ptr+1] == 0x81 ) {
 	set_hlfo_onoff( t, data[ptr+1]-0x80, songdata );
 	follower = 1;
       } else {
+	if (ptr + 5 >= mdx->length) goto out_of_bounds;
 	set_hlfo( t,
 		  data[ptr+1], data[ptr+2], data[ptr+3],
 		  data[ptr+4], data[ptr+5], songdata );
@@ -692,6 +729,7 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_SET_LFO_DELAY:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       set_lfo_delay( t, data[ptr+1], songdata );
       follower = 1;
       break;
@@ -701,10 +739,12 @@ set_new_event( int t, songdata *songdata )
       break;
 
     case MDX_FADE_OUT:
+      if (ptr + 1 >= mdx->length) goto out_of_bounds;
       if ( data[ptr+1]==0x00 ) {
 	follower = 1;
 	set_fade_out( 5, songdata );
       } else {
+	if (ptr + 2 >= mdx->length) goto out_of_bounds;
 	follower = 2;
 	set_fade_out( data[ptr+2], songdata );
       }
@@ -717,9 +757,15 @@ set_new_event( int t, songdata *songdata )
   }
 
   ptr += 1+follower;
+  if (ptr < 0 || ptr > mdx->length) goto out_of_bounds;
   mdx->track[t].current_mml_ptr = ptr;
 
   return count;
+
+out_of_bounds:
+ note_off(t, songdata);
+ mdx->track[t].counter = -1;
+ return -1;
 }
 
 
@@ -1033,6 +1079,7 @@ send_sync( int track, songdata *data )
 {
   __GETMDX(data);
 
+  if (track < 0 || track >= mdx->tracks || track >= MDX_MAX_TRACK_NUMBER) return;
   mdx->track[track].waiting_sync = FLAG_FALSE;
   return;
 }
@@ -1042,6 +1089,7 @@ recv_sync( int track, songdata *data )
 {
   __GETMDX(data);
 
+  if (track < 0 || track >= mdx->tracks || track >= MDX_MAX_TRACK_NUMBER) return;
   mdx->track[track].waiting_sync = FLAG_TRUE;
   return;
 }

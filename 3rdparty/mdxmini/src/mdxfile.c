@@ -101,15 +101,15 @@ MDX_DATA *mdx_open_mdx( char *name ) {
     goto error_end;
   }
   while(1) {
+    if ( ptr + 2 >= mdx->length ) goto error_end;
     if ( buf[ptr+0] == 0x0d &&
 	 buf[ptr+1] == 0x0a &&
 	 buf[ptr+2] == 0x1a ) break;
 
     mdx->data_title[i++]=buf[ptr++];  /* warning! this text is SJIS */
-    if ( i>=MDX_MAX_TITLE_LENGTH ) i--;
-    if ( ptr > mdx->length ) return NULL;
+    if ( i>=MDX_MAX_TITLE_LENGTH - 1 ) i = MDX_MAX_TITLE_LENGTH - 1;
   }
-  mdx->data_title[i++]=0;
+  mdx->data_title[i]=0;
 
 
   /* pdx name */
@@ -122,13 +122,13 @@ MDX_DATA *mdx_open_mdx( char *name ) {
   j=0;
   mdx->haspdx=FLAG_FALSE;
   while(1) {
+    if ( ptr >= mdx->length ) goto error_end;
     if ( buf[ptr] == 0x00 ) break;
 
     mdx->haspdx=FLAG_TRUE;
     mdx->pdx_name[i++] = buf[ptr++];
     if ( strcasecmp( ".pdx", (char *)(buf+ptr-1) )==0 ) j=1;
-    if ( i>= MDX_MAX_PDX_FILENAME_LENGTH ) i--;
-    if ( ptr > mdx->length ) goto error_end;
+    if ( i>= MDX_MAX_PDX_FILENAME_LENGTH - 5 ) i = MDX_MAX_PDX_FILENAME_LENGTH - 5;
   }
   if ( mdx->haspdx==FLAG_TRUE && j==0 ) {
     mdx->pdx_name[i+0] = '.';
