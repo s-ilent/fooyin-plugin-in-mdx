@@ -344,6 +344,7 @@ int mdx_parse_mml_ym2151_async_get_length(songdata *data)
   int next,sec;
   
   __GETSELF(data)
+  ym2151_set_enable(FLAG_FALSE, data);
   
   next = 1;
   while(next && self->mdx->elapsed_time < (1200 * 1000000))
@@ -381,6 +382,7 @@ int mdx_parse_mml_ym2151_async_get_length_ms(songdata *data)
   double elapsed_us;
   
   __GETSELF(data);
+  ym2151_set_enable(FLAG_FALSE, data);
   
   next = 1;
   self->mdx->elapsed_time = 0;

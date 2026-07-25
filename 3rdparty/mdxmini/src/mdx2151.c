@@ -176,6 +176,13 @@ ym2151_instance(songdata *data)
   return self->YM2151_Instance;
 }
 
+void
+ym2151_set_enable( int flag, songdata *data )
+{
+  __GETSELF(data);
+  self->ym2151_enable = flag;
+}
+
 int
 ym2151_reg_init( MDX_DATA *mdx, songdata *data )
 {
@@ -195,9 +202,11 @@ ym2151_reg_init( MDX_DATA *mdx, songdata *data )
     sample bits   = 16 bit
     */
 
-  self->YM2151_Instance = YM2151Init( 1, 4000*1000, mdx->dsp_speed );
   if (!self->YM2151_Instance) {
-    return FLAG_FALSE;
+    self->YM2151_Instance = YM2151Init( 1, 4000*1000, mdx->dsp_speed );
+    if (!self->YM2151_Instance) {
+      return FLAG_FALSE;
+    }
   }
   YM2151ResetChip( ym2151_instance(data) );
 

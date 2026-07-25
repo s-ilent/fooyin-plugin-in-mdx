@@ -17,6 +17,7 @@ extern int ym2151_reg_init( MDX_DATA *, songdata * );
 extern void ym2151_shutdown( songdata * );
 
 extern void ym2151_set_logging( int flag, songdata * );
+extern void ym2151_set_enable( int flag, songdata * );
 
 extern void ym2151_all_note_off( songdata * );
 extern void ym2151_note_on( int, int, songdata * );
