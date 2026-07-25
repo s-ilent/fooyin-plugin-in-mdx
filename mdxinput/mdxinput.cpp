@@ -237,6 +237,10 @@ namespace Fooyin::MDX {
         QString filePath = extractLocalFilePath(source, tempFile);
         if (filePath.isEmpty()) return false;
 
+        QSettings settings;
+        int fmCore = settings.value(u"MDX/FmCore"_s, 1).toInt();
+        mdx_set_fm_core(fmCore);
+
         t_mdxmini mdx;
         std::memset(&mdx, 0, sizeof(mdx));
 
@@ -250,7 +254,6 @@ namespace Fooyin::MDX {
             return false;
         }
 
-        QSettings settings;
         QString fallbackPdx = settings.value(u"MDX/PdxDir"_s).toString();
         if (!fallbackPdx.isEmpty()) {
             QByteArray fallbackBytes = fallbackPdx.toUtf8();
