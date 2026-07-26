@@ -25,7 +25,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#ifndef _WIN32
+#include <dirent.h>
+#include <strings.h>
+#endif
 
 #include "mdxmini.h"
 #include "class.h"
@@ -86,6 +89,41 @@ static float reverb_wet;
 
 extern void ym2151_set_logging( int flag, songdata * );
 
+
+/* ------------------------------------------------------------------ */
+
+static FILE *fopen_ci(const char *path, const char *mode)
+{
+    FILE *fp = fopen(path, mode);
+    if (fp || strchr(path, '/') == NULL) {
+        return fp;
+    }
+
+#ifndef _WIN32
+    char dir_buf[PATH_BUF_SIZE];
+    const char *filename = strrchr(path, '/') + 1;
+    size_t dir_len = (size_t)(filename - path);
+
+    if (dir_len >= sizeof(dir_buf)) return NULL;
+    memcpy(dir_buf, path, dir_len);
+    dir_buf[dir_len] = '\0';
+
+    DIR *dir = opendir(dir_buf);
+    if (!dir) return NULL;
+
+    struct dirent *ent;
+    while ((ent = readdir(dir)) != NULL) {
+        if (strcasecmp(ent->d_name, filename) == 0) {
+            snprintf(dir_buf + dir_len, sizeof(dir_buf) - dir_len, "%s", ent->d_name);
+            fp = fopen(dir_buf, mode);
+            break;
+        }
+    }
+    closedir(dir);
+#endif
+
+    return fp;
+}
 
 /* ------------------------------------------------------------------ */
 
@@ -414,7 +452,7 @@ _load_pdx_data(char* name, long* out_length)
   FILE *fp;
   unsigned char *buf = NULL;
   
-  fp = fopen(name,"rb");
+  fp = fopen_ci(name,"rb");
 
   if (!fp)
 	return NULL;
