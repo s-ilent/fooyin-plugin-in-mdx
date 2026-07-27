@@ -100,28 +100,42 @@ static FILE *fopen_ci(const char *path, const char *mode)
     }
 
 #ifndef _WIN32
-    char dir_buf[PATH_BUF_SIZE];
-    const char *filename = strrchr(path, '/') + 1;
+    const char *filename = strrchr(path, '/');
+    filename = filename ? filename + 1 : path;
+    
+    char dir_path[PATH_BUF_SIZE];
     size_t dir_len = (size_t)(filename - path);
-
-    if (dir_len >= sizeof(dir_buf)) return NULL;
-    memcpy(dir_buf, path, dir_len);
-    dir_buf[dir_len] = '\0';
-
-    DIR *dir = opendir(dir_buf);
+    if (dir_len >= sizeof(dir_path)) return NULL;
+    
+    memcpy(dir_path, path, dir_len);
+    dir_path[dir_len] = '\0';
+    
+    DIR *dir = opendir(dir_len ? dir_path : ".");
     if (!dir) return NULL;
-
+    
+    const char *dot = strrchr(filename, '.');
+    size_t stem_len = dot ? (size_t)(dot - filename) : strlen(filename);
+    
     struct dirent *ent;
+    char match[PATH_BUF_SIZE] = {0};
+    
     while ((ent = readdir(dir)) != NULL) {
         if (strcasecmp(ent->d_name, filename) == 0) {
-            snprintf(dir_buf + dir_len, sizeof(dir_buf) - dir_len, "%s", ent->d_name);
-            fp = fopen(dir_buf, mode);
-            break;
+            snprintf(match, sizeof(match), "%s%s", dir_path, ent->d_name);
+            break; // Stop immediately on exact match
+        }
+    
+        if (stem_len > 8 && dot &&
+            strncasecmp(ent->d_name, filename, 8) == 0 &&
+            strcasecmp(ent->d_name + strlen(ent->d_name) - strlen(dot), dot) == 0) {
+            snprintf(match, sizeof(match), "%s%s", dir_path, ent->d_name);
         }
     }
     closedir(dir);
+    
+    return match[0] ? fopen(match, mode) : NULL;
 #endif
-
+    
     return fp;
 }
 
