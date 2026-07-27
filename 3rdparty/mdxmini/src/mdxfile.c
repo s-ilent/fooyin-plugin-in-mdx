@@ -272,16 +272,22 @@ int mdx_get_voice_parameter( MDX_DATA *mdx ) {
   int ptr;
   int num;
   unsigned char *buf;
+  unsigned char seen[MDX_MAX_VOICE_NUMBER];
 
   ptr = mdx->voice_data_offset;
   buf = mdx->data;
 
+  memset(seen, 0, sizeof(seen));
+
   while ( ptr < mdx->length ) {
 
     if ( mdx->length-ptr < 27 ) break;
-
-    num = buf[ptr++];
+    
+    num = buf[ptr];
     if ( num >= MDX_MAX_VOICE_NUMBER ) return 1;
+    if ( seen[num] ) break;
+    seen[num] = 1;
+    ptr++;
 
     mdx->voice[num].v0 = buf[ptr];
 
