@@ -4,10 +4,12 @@ An input plugin for **Fooyin** that decodes Sharp X68000 `.mdx` chiptunes via `m
 
 ## Features
 
-- Full playback of 8-channel YM2151 FM synth & PCM8 audio samples.
-- Automatic lookup of associated `.pdx` sample files in the song's directory.
-- Shift-JIS title string decoding.
+- Full playback of 8-channel YM2151 FM synth & MSM6258 ADPCM audio samples, with PCM8 support too!
+- Support for switching between the cycle-accurate Nuked-OPM YM2151 emulation core and original MAME YM2151 emulator. 
+- Automatic lookup of associated `.pdx` sample files in the song's directory, or specify a fallback directory. 
+- Displays song titles correctly with automatic Shift-JIS title string decoding.
 - Customisable gain, loop count, and output sample rate.
+- Shouldn't crash on bad/broken MDX files!
 
 ## Building Instructions
 
