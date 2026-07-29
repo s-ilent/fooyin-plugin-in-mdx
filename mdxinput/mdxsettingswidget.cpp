@@ -45,17 +45,23 @@ namespace Fooyin::MDX {
 
         m_gain->setRange(-12, 12);
         m_gain->setSuffix(u" dB"_s);
+        m_gain->setToolTip(tr("Applies gain adjustment in decibels (dB) to the decoded audio."));
 
         m_loopCount->setRange(1, 10);
         m_loopCount->setSuffix(u" "_s + tr("loops"));
 
         m_sampleRate->addItems({u"22050 Hz"_s, u"44100 Hz"_s, u"48000 Hz"_s, u"62500 Hz"_s, u"96000 Hz"_s});
         
-        m_fmCore->addItem(tr("MAME YM2151 (Fast)"), 0);
-        m_fmCore->addItem(tr("Nuked OPM (Experimental)"), 1);
+        m_fmCore->addItem(tr("MAME YM2151"), 0);
+        m_fmCore->addItem(tr("Nuked OPM"), 1);
+        m_fmCore->setToolTip(tr(
+            "Nuked-OPM: Cycle-accurate YM2151 emulation based on silicon decaps.\n"
+            "MAME: Faster emulation, more suitable for low-power hardware."
+        ));
 
         auto* pdxRow = new QHBoxLayout();
         pdxRow->addWidget(m_pdxDir);
+        m_pdxDir->setToolTip(tr("Optional directory to search for missing .pdx sample files if not found in the track's folder."));
         auto* browseBtn = new QPushButton(tr("Browse..."), this);
         connect(browseBtn, &QPushButton::clicked, this, [this]() {
             QString dir = QFileDialog::getExistingDirectory(this, tr("Select PDX Directory"), m_pdxDir->text());
