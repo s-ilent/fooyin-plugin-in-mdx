@@ -1,4 +1,5 @@
 #include "mdxsettingswidget.h"
+#include "mdxinput.h"
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -30,10 +31,10 @@ namespace Fooyin::MDX {
 
         auto* resetButton = new QPushButton(tr("Reset"), this);
         connect(resetButton, &QPushButton::clicked, this, [this]() {
-            m_gain->setValue(0.0);
-            m_loopCount->setValue(3);
-            m_sampleRate->setCurrentText(u"62500 Hz"_s);
-            m_fmCore->setCurrentIndex(0);
+            m_gain->setValue(Defaults::Gain);
+            m_loopCount->setValue(Defaults::LoopCount);
+            m_sampleRate->setCurrentText(QString::number(Defaults::SampleRate) + u" Hz"_s);
+            m_fmCore->setCurrentIndex(m_fmCore->findData(Defaults::FmCore));
             m_pdxDir->clear();
         });
 
@@ -89,17 +90,17 @@ namespace Fooyin::MDX {
 
     void MDXSettingsWidget::loadSettings()
     {
-        m_gain->setValue(m_settings.value("MDX/Gain", 0.0).toDouble());
+        m_gain->setValue(m_settings.value(u"MDX/Gain"_s, Defaults::Gain).toDouble());
         
-        int core = m_settings.value("MDX/FmCore", 1).toInt();
+        int core = m_settings.value(u"MDX/FmCore"_s, Defaults::FmCore).toInt();
         int idx = m_fmCore->findData(core);
         m_fmCore->setCurrentIndex(idx >= 0 ? idx : 1);
                 
-        m_loopCount->setValue(m_settings.value("MDX/LoopCount", 3).toInt());
-
-        int rate = m_settings.value("MDX/SampleRate", 44100).toInt();
+        m_loopCount->setValue(m_settings.value(u"MDX/LoopCount"_s, Defaults::LoopCount).toInt());
+    
+        int rate = m_settings.value(u"MDX/SampleRate"_s, Defaults::SampleRate).toInt();
         m_sampleRate->setCurrentText(QString::number(rate) + u" Hz"_s);
-        m_pdxDir->setText(m_settings.value("MDX/PdxDir", QString()).toString());
+        m_pdxDir->setText(m_settings.value(u"MDX/PdxDir"_s, Defaults::PdxDir).toString());
     }
 
 } // namespace Fooyin::MDX

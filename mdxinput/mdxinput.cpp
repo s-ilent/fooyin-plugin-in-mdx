@@ -239,7 +239,9 @@ namespace Fooyin::MDX {
 
         QSettings settings;
         int fmCore = settings.value(u"MDX/FmCore"_s, 1).toInt();
+        int sampleRate = settings.value(u"MDX/SampleRate"_s, Defaults::SampleRate).toInt();
         mdx_set_fm_core(fmCore);
+        mdx_set_rate(sampleRate);
 
         t_mdxmini mdx;
         std::memset(&mdx, 0, sizeof(mdx));
@@ -247,7 +249,6 @@ namespace Fooyin::MDX {
         QFileInfo fileInfo(filePath);
         QString pcmDir = fileInfo.absolutePath();
 
-        mdx_set_rate(44100);
         QByteArray filePathBytes2 = filePath.toUtf8();
         QByteArray pcmDirBytes2   = pcmDir.toUtf8();
         if (mdx_open(&mdx, filePathBytes2.data(), pcmDirBytes2.data()) < 0) {
@@ -268,7 +269,7 @@ namespace Fooyin::MDX {
 
         track.setTitle(title.isEmpty() ? fileInfo.completeBaseName() : title);
         track.setDuration(durationMs);
-        track.setSampleRate(44100);
+        track.setSampleRate(sampleRate);
         track.setChannels(2);
         track.setBitDepth(16);
         track.setCodec(u"MDX / MXDRV"_s);

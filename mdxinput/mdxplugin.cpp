@@ -4,6 +4,8 @@
 #include <gui/plugins/pluginsettingsprovider.h>
 #include <QSettings>
 
+using namespace Qt::StringLiterals;
+
 namespace Fooyin::MDX {
 
     namespace {
@@ -31,10 +33,10 @@ namespace Fooyin::MDX {
             auto decoder = std::make_unique<MDXDecoder>();
 
             QSettings settings;
-            decoder->setGain(settings.value("MDX/Gain", 0.0).toDouble());
-            decoder->setLoopCount(settings.value("MDX/LoopCount", 3).toInt());
-            decoder->setSampleRate(settings.value("MDX/SampleRate", 44100).toInt());
-            decoder->setPdxDir(settings.value("MDX/PdxDir", QString()).toString());
+            decoder->setGain(settings.value(u"MDX/Gain"_s, Defaults::Gain).toDouble());
+            decoder->setLoopCount(settings.value(u"MDX/LoopCount"_s, Defaults::LoopCount).toInt());
+            decoder->setSampleRate(settings.value(u"MDX/SampleRate"_s, Defaults::SampleRate).toInt());
+            decoder->setPdxDir(settings.value(u"MDX/PdxDir"_s, Defaults::PdxDir).toString());
 
             return decoder;
         };

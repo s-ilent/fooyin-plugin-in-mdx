@@ -7,6 +7,14 @@
 
 namespace Fooyin::MDX {
 
+    namespace Defaults {
+        constexpr double Gain = 0.0;
+        constexpr int FmCore = 1;          // 0 = MAME, 1 = Nuked-OPM
+        constexpr int LoopCount = 3;
+        constexpr int SampleRate = 62500;   // Native YM2151 clock rate (4.0 MHz / 64)
+        inline const QString PdxDir = {};
+    }
+
     class MDXDecoder : public AudioDecoder
     {
     public:
@@ -29,9 +37,9 @@ namespace Fooyin::MDX {
     private:
         bool openMdxEngine(const QString& filePath);
 
-        double m_gainDb{0.0};
-        int m_loopCount{3};
-        int m_sampleRate{44100};
+        double m_gainDb{Defaults::Gain};
+        int m_loopCount{Defaults::LoopCount};
+        int m_sampleRate{Defaults::SampleRate};
         QString m_pdxDir;
 
         AudioFormat m_format;
